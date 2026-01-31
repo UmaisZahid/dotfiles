@@ -81,6 +81,7 @@ install_system_deps() {
     command -v git &>/dev/null || missing+=("git")
     command -v curl &>/dev/null || missing+=("curl")
     command -v zsh &>/dev/null || missing+=("zsh")
+    command -v xclip &>/dev/null || missing+=("xclip")
 
     if [[ ${#missing[@]} -eq 0 ]]; then
         success "System dependencies already installed (git, curl, zsh)"
@@ -180,44 +181,7 @@ install_ripgrep() {
     success "ripgrep installed"
 }
 
-# Install bat
-install_bat() {
-    info "Installing bat..."
 
-    local version
-    version=$(get_latest_release "sharkdp/bat")
-
-    if [[ "$OS" == "Linux" ]]; then
-        # bat keeps the 'v' in filenames: bat-v0.26.1-x86_64-...
-        curl -fsSL "https://github.com/sharkdp/bat/releases/download/${version}/bat-${version}-${ARCH}-unknown-linux-musl.tar.gz" -o /tmp/bat.tar.gz
-        tar -xzf /tmp/bat.tar.gz -C /tmp
-        cp /tmp/bat-${version}-${ARCH}-unknown-linux-musl/bat "$LOCAL_BIN/"
-        rm -rf /tmp/bat.tar.gz /tmp/bat-*
-    elif [[ "$OS" == "Darwin" ]]; then
-        brew install bat
-    fi
-
-    success "bat installed"
-}
-
-# Install eza
-install_eza() {
-    info "Installing eza..."
-
-    local version
-    version=$(get_latest_release "eza-community/eza")
-
-    if [[ "$OS" == "Linux" ]]; then
-        # eza filename has no version: eza_x86_64-unknown-linux-musl.tar.gz
-        curl -fsSL "https://github.com/eza-community/eza/releases/download/${version}/eza_${ARCH}-unknown-linux-musl.tar.gz" -o /tmp/eza.tar.gz
-        tar -xzf /tmp/eza.tar.gz -C "$LOCAL_BIN"
-        rm /tmp/eza.tar.gz
-    elif [[ "$OS" == "Darwin" ]]; then
-        brew install eza
-    fi
-
-    success "eza installed"
-}
 
 # Install zoxide
 install_zoxide() {
@@ -352,11 +316,9 @@ main() {
         install_system_deps
     fi
 
-    if confirm "Install CLI tools (fzf, ripgrep, bat, eza, zoxide)?"; then
+    if confirm "Install CLI tools (fzf, ripgrep, zoxide)?"; then
         install_fzf
         install_ripgrep
-        install_bat
-        install_eza
         install_zoxide
     fi
 

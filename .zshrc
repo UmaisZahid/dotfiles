@@ -18,9 +18,6 @@ setopt AUTO_CD
 setopt CORRECT
 setopt NO_BEEP
 
-# Vi mode
-bindkey -v
-export KEYTIMEOUT=1
 
 # ============================================
 # Zinit Plugin Manager
@@ -45,8 +42,6 @@ zinit light zsh-users/zsh-history-substring-search
 # History substring search keybindings (after plugin loads)
 bindkey '^[[A' history-substring-search-up
 bindkey '^[[B' history-substring-search-down
-bindkey -M vicmd 'k' history-substring-search-up
-bindkey -M vicmd 'j' history-substring-search-down
 
 # ============================================
 # FZF Configuration
@@ -86,11 +81,6 @@ fi
 # ============================================
 
 # General
-alias ls='eza -a --icons 2>/dev/null || ls -a --color=auto'
-alias ll='eza -la --icons 2>/dev/null || ls -la --color=auto'
-alias la='eza -a --icons 2>/dev/null || ls -a --color=auto'
-alias lt='eza --tree --icons 2>/dev/null || tree'
-alias cat='bat --paging=never 2>/dev/null || cat'
 
 # Git - Basic operations
 alias g='git'
