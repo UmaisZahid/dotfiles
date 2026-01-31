@@ -283,6 +283,37 @@ link_dotfiles() {
     success "Dotfiles linked"
 }
 
+# Link agent skills (Claude Code and Codex)
+link_agent_skills() {
+    info "Linking agent skills..."
+
+    local skills_dir="$DOTFILES_DIR/skills"
+    local claude_skills="$HOME/.claude/skills"
+    local codex_skills="$HOME/.codex/skills"
+
+    # Create target directories
+    mkdir -p "$claude_skills"
+    mkdir -p "$codex_skills"
+
+    # Link each skill directory to both Claude Code and Codex
+    if [[ -d "$skills_dir" ]]; then
+        for skill in "$skills_dir"/*/; do
+            if [[ -d "$skill" ]]; then
+                local skill_name
+                skill_name=$(basename "$skill")
+
+                # Skip if skill name starts with a dot
+                [[ "$skill_name" == .* ]] && continue
+
+                link_file "$skill" "$claude_skills/$skill_name"
+                link_file "$skill" "$codex_skills/$skill_name"
+            fi
+        done
+    fi
+
+    success "Agent skills linked"
+}
+
 # Change default shell to zsh
 set_default_shell() {
     if [[ "$SHELL" != *"zsh"* ]]; then
@@ -343,6 +374,10 @@ main() {
     fi
 
     link_dotfiles
+
+    if confirm "Link agent skills (Claude Code & Codex)?"; then
+        link_agent_skills
+    fi
 
     # Install tmux plugins after dotfiles are linked
     install_tmux_plugins
