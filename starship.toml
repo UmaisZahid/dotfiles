@@ -1,0 +1,5 @@
+# Starship prompt configuration
+# Uses defaults - customize as needed
+# Full options: https://starship.rs/config/
+
+"$schema" = "https://starship.rs/config-schema.json"
