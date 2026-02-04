@@ -55,9 +55,9 @@ LOOP:
    ## Instructions
    - If no plan exists: Create a detailed implementation plan
    - If plan exists: Review critically and improve if needed
-   - Write the result to: {plan_file}
-   - Use WebSearch if you need to research best practices, APIs, or technologies
+   - If you feel the need, use WebSearch to research best practices, APIs, or technologies
    - Be specific and actionable - vague steps are not helpful
+   - Write the result to: {plan_file}
 
    ## Plan Structure
    Use this structure:
