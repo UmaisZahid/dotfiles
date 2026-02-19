@@ -219,7 +219,7 @@ install_tmux_plugins() {
     local tpm_dir="$HOME/.tmux/plugins/tpm"
     if [[ -f "$HOME/.tmux.conf" ]] && [[ -x "$tpm_dir/bin/install_plugins" ]]; then
         info "Installing tmux plugins..."
-        "$tpm_dir/bin/install_plugins"
+        TMUX_PLUGIN_MANAGER_PATH="$HOME/.tmux/plugins" "$tpm_dir/bin/install_plugins"
         success "tmux plugins installed"
     fi
 }
