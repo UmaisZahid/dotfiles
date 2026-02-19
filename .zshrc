@@ -43,6 +43,10 @@ zinit light zsh-users/zsh-history-substring-search
 bindkey '^[[A' history-substring-search-up
 bindkey '^[[B' history-substring-search-down
 
+# Word navigation with Ctrl+Left/Right
+bindkey '^[[1;5D' backward-word
+bindkey '^[[1;5C' forward-word
+
 # ============================================
 # FZF Configuration
 # ============================================
