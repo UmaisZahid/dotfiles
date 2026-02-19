@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cfg="${SSH_CONFIG:-$HOME/.ssh/config}"
+
+declare -A seen_files=()
+declare -A seen_hosts=()
+declare -a queue=()
+
+trim() {
+    local s="$1"
+    s="${s#"${s%%[![:space:]]*}"}"
+    s="${s%"${s##*[![:space:]]}"}"
+    printf '%s' "$s"
+}
+
+enqueue_file() {
+    local f="$1"
+    [[ -f "$f" ]] || return 0
+    [[ -n "${seen_files[$f]:-}" ]] && return 0
+    seen_files["$f"]=1
+    queue+=("$f")
+}
+
+enqueue_file "$cfg"
+
+while ((${#queue[@]} > 0)); do
+    file="${queue[0]}"
+    queue=("${queue[@]:1}")
+    dir="$(cd "$(dirname "$file")" && pwd)"
+
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        line="${line%%#*}"
+        line="$(trim "$line")"
+        [[ -z "$line" ]] && continue
+
+        key="${line%%[[:space:]]*}"
+        rest="$(trim "${line#"$key"}")"
+
+        case "${key,,}" in
+            include)
+                for pat in $rest; do
+                    pat="${pat/#\~/$HOME}"
+                    [[ "$pat" != /* ]] && pat="$dir/$pat"
+
+                    matches=()
+                    while IFS= read -r match; do
+                        matches+=("$match")
+                    done < <(compgen -G "$pat" || true)
+
+                    if ((${#matches[@]} > 0)); then
+                        for m in "${matches[@]}"; do
+                            enqueue_file "$m"
+                        done
+                    else
+                        enqueue_file "$pat"
+                    fi
+                done
+                ;;
+            host)
+                chosen=""
+                for h in $rest; do
+                    case "$h" in
+                        *[\*\?\!\[]*) continue ;;
+                    esac
+                    if [[ -z "$chosen" ]] || ((${#h} < ${#chosen})); then
+                        chosen="$h"
+                    fi
+                done
+                if [[ -n "$chosen" ]]; then
+                    seen_hosts["$chosen"]=1
+                fi
+                ;;
+        esac
+    done < "$file"
+done
+
+printf "%s\n" "${!seen_hosts[@]}" | sort -u

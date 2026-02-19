@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ -z "${TMUX:-}" ]]; then
+    echo "tmux-ssh-open: not inside tmux" >&2
+    exit 1
+fi
+
+if (($# == 0)); then
+    exit 0
+fi
+
+for host in "$@"; do
+    tmux new-window -n "$host" "ssh $host"
+done

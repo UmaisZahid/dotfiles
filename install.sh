@@ -279,6 +279,9 @@ link_dotfiles() {
     link_file "$DOTFILES_DIR/.zshrc" "$HOME/.zshrc"
     link_file "$DOTFILES_DIR/.tmux.conf" "$HOME/.tmux.conf"
     link_file "$DOTFILES_DIR/starship.toml" "$HOME/.config/starship.toml"
+    link_file "$DOTFILES_DIR/bin/ssh-hosts" "$LOCAL_BIN/ssh-hosts"
+    link_file "$DOTFILES_DIR/bin/tmux-ssh-open" "$LOCAL_BIN/tmux-ssh-open"
+    link_file "$DOTFILES_DIR/bin/tmux-ssh-fzf" "$LOCAL_BIN/tmux-ssh-fzf"
 
     success "Dotfiles linked"
 }
