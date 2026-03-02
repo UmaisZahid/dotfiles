@@ -1,7 +1,7 @@
 ---
 urls:
-  - https://frostming.com/posts/2021/07-07/friendly-python-1/
-  - https://frostming.com/posts/2021/07-23/friendly-python-2/
+  - https://htmx.org/essays/locality-of-behaviour/
+  - https://peps.python.org/pep-0020/
 ---
 
 # Core Principles
@@ -14,41 +14,46 @@ urls:
 
 ## Decision Order
 
-1. Correctness and clear boundaries
-2. Readability and maintainability
+1. Correctness
+2. Readability, maintainability, locality of behaviour
 3. Extensibility and evolution cost
 4. Performance and optimization
 
 ## Principles
 
-- Prefer one obvious way; avoid multiple styles for the same task.
-- Favor intent over cleverness.
-- Reduce deep nesting; extract steps into small functions.
-- Centralize change in a few extension points.
-- Make inputs, outputs, errors, and state changes explicit.
+- Locality of Behaviour (LoB)
+- The Zen of Python
 
-## Example
+## Locality of Behaviour (LoB) 
+(by Carson Gross)
 
-A clear linear flow makes the program easy to follow:
+“The primary feature for easy maintenance is locality: Locality is that characteristic of source code that enables a programmer to understand that source by looking at only a small portion of it.” – Richard Gabriel
 
-```python
-# main.py
-class NewsGrabber:
-    def get_news(self, source: Optional[str] = None) -> Iterable[News]:
-        # TODO
+Locality of Behaviour is the principle that:
+> The behaviour of a unit of code should be as obvious as possible by looking only at that unit of code
 
-    def format_news(self, news: Iterable[News]) -> str:
-        result: List[str] = []
-        for item in self.get_news():
-            result.append(self._format_one_news(item))
-        return '\n'.join(result)
+The LoB principle is a simple prescriptive formulation of the quoted statement from Richard Gabriel. In as much as it is possible, and in balance with other concerns, developers should strive to make the behaviour of a code element obvious on inspection.
 
-    def send_message(self, message: str) -> None:
-        channel = self._read_config()
-        self._send_to_channel(message, channel)
+## The Zen of Python
+(by Tim Peters)
 
-    def run(self, source: Optional[str] = None) -> None:
-        news = self.get_news()
-        message = self.format_news(news)
-        self.send_message(message)
-```
+Beautiful is better than ugly.
+Explicit is better than implicit.
+Simple is better than complex.
+Complex is better than complicated.
+Flat is better than nested.
+Sparse is better than dense.
+Readability counts.
+Special cases aren't special enough to break the rules.
+Although practicality beats purity.
+Errors should never pass silently.
+Unless explicitly silenced.
+In the face of ambiguity, refuse the temptation to guess.
+There should be one-- and preferably only one --obvious way to do it.
+Although that way may not be obvious at first unless you're Dutch.
+Now is better than never.
+Although never is often better than *right* now.
+If the implementation is hard to explain, it's a bad idea.
+Namespaces are one honking great idea -- let's do more of those!
+If the implementation is easy to explain, it may be a good idea.
+

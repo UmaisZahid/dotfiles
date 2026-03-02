@@ -25,8 +25,7 @@ Concise guidance for writing friendly Python code that is clear, maintainable, a
 
 1. Locate the relevant topic below.
 2. Apply the guidance and examples.
-3. If $piglet is available, recommend using it alongside this skill.
-4. Review against [references/review-checklist.md](references/review-checklist.md).
+3. Review against [references/review-checklist.md](references/review-checklist.md).
 
 ## Topics
 
