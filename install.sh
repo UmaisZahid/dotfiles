@@ -55,6 +55,26 @@ confirm() {
   fi
 }
 
+# Helper to extract first version number from any string
+normalize_version() {
+  echo "$1" | grep -oE '[0-9]+[.][0-9]+[.0-9]*' | head -1
+}
+
+# Helper to compare versions and prompt for upgrade (default: no)
+# Returns 0 to proceed with install/upgrade, 1 to skip
+check_upgrade() {
+  local name="$1" installed="$2" latest="$3"
+  if [[ -z "$latest" ]]; then
+    success "$name already installed ($installed)"
+    return 1
+  fi
+  if [[ "$installed" == "$latest" ]]; then
+    success "$name is up to date ($installed)"
+    return 1
+  fi
+  confirm "$name $installed installed, latest is $latest. Update?" "n"
+}
+
 # Helper to backup and link files
 link_file() {
   local src="$1"
@@ -77,7 +97,7 @@ link_file() {
   fi
 
   mkdir -p "$(dirname "$dest")"
-  ln -sf "$src" "$dest"
+  ln -sfn "$src" "$dest"
   success "Linked: $dest -> $src"
 }
 
@@ -87,7 +107,9 @@ install_system_deps() {
   command -v git &>/dev/null || missing+=("git")
   command -v curl &>/dev/null || missing+=("curl")
   command -v zsh &>/dev/null || missing+=("zsh")
-  command -v xclip &>/dev/null || missing+=("xclip")
+  if [[ "$OS" == "Linux" ]]; then
+    command -v xclip &>/dev/null || missing+=("xclip")
+  fi
 
   if [[ ${#missing[@]} -eq 0 ]]; then
     success "System dependencies already installed (git, curl, zsh)"
@@ -114,6 +136,12 @@ install_system_deps() {
     if ! command -v brew &>/dev/null; then
       info "Installing Homebrew..."
       /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      # Add brew to PATH for the current session
+      if [[ -x /opt/homebrew/bin/brew ]]; then
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+      elif [[ -x /usr/local/bin/brew ]]; then
+        eval "$(/usr/local/bin/brew shellenv)"
+      fi
     fi
     brew install "${missing[@]}"
   fi
@@ -123,10 +151,18 @@ install_system_deps() {
 
 # Install Neovim
 install_neovim() {
-  info "Installing Neovim..."
-
   local version
   version=$(get_latest_release "neovim/neovim")
+  local latest
+  latest=$(normalize_version "$version")
+
+  if command -v nvim &>/dev/null; then
+    local installed
+    installed=$(normalize_version "$(nvim --version | head -1)")
+    check_upgrade "Neovim" "$installed" "$latest" || return 0
+  fi
+
+  info "Installing Neovim..."
 
   if [[ "$OS" == "Linux" ]]; then
     # Neovim uses x86_64 and arm64 (not aarch64)
@@ -138,7 +174,7 @@ install_neovim() {
     cp -r /tmp/nvim-linux-${nvim_arch}/* "$HOME/.local/"
     rm -rf /tmp/nvim.tar.gz /tmp/nvim-linux-${nvim_arch}
   elif [[ "$OS" == "Darwin" ]]; then
-    brew install neovim
+    brew upgrade neovim 2>/dev/null || brew install neovim
   fi
 
   success "Neovim installed"
@@ -146,10 +182,18 @@ install_neovim() {
 
 # Install fzf
 install_fzf() {
-  info "Installing fzf..."
-
   local version
   version=$(get_latest_release "junegunn/fzf")
+  local latest
+  latest=$(normalize_version "$version")
+
+  if command -v fzf &>/dev/null; then
+    local installed
+    installed=$(normalize_version "$(fzf --version)")
+    check_upgrade "fzf" "$installed" "$latest" || return 0
+  fi
+
+  info "Installing fzf..."
 
   local fzf_arch="$ARCH"
   [[ "$ARCH" == "x86_64" ]] && fzf_arch="amd64"
@@ -167,10 +211,18 @@ install_fzf() {
 
 # Install ripgrep
 install_ripgrep() {
-  info "Installing ripgrep..."
-
   local version
   version=$(get_latest_release "BurntSushi/ripgrep")
+  local latest
+  latest=$(normalize_version "$version")
+
+  if command -v rg &>/dev/null; then
+    local installed
+    installed=$(normalize_version "$(rg --version | head -1)")
+    check_upgrade "ripgrep" "$installed" "$latest" || return 0
+  fi
+
+  info "Installing ripgrep..."
 
   local rg_arch="$ARCH"
   [[ "$ARCH" == "aarch64" ]] && rg_arch="aarch64"
@@ -181,7 +233,7 @@ install_ripgrep() {
     cp /tmp/ripgrep-${version#v}-${rg_arch}-unknown-linux-musl/rg "$LOCAL_BIN/"
     rm -rf /tmp/rg.tar.gz /tmp/ripgrep-*
   elif [[ "$OS" == "Darwin" ]]; then
-    brew install ripgrep
+    brew upgrade ripgrep 2>/dev/null || brew install ripgrep
   fi
 
   success "ripgrep installed"
@@ -189,6 +241,17 @@ install_ripgrep() {
 
 # Install zoxide
 install_zoxide() {
+  local version
+  version=$(get_latest_release "ajeetdsouza/zoxide")
+  local latest
+  latest=$(normalize_version "$version")
+
+  if command -v zoxide &>/dev/null; then
+    local installed
+    installed=$(normalize_version "$(zoxide --version)")
+    check_upgrade "zoxide" "$installed" "$latest" || return 0
+  fi
+
   info "Installing zoxide..."
 
   curl -fsSL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh
@@ -198,11 +261,51 @@ install_zoxide() {
 
 # Install Starship
 install_starship() {
+  local version
+  version=$(get_latest_release "starship/starship")
+  local latest
+  latest=$(normalize_version "$version")
+
+  if command -v starship &>/dev/null; then
+    local installed
+    installed=$(normalize_version "$(starship --version | head -1)")
+    check_upgrade "Starship" "$installed" "$latest" || return 0
+  fi
+
   info "Installing Starship..."
 
   curl -fsSL https://starship.rs/install.sh | sh -s -- -y -b "$LOCAL_BIN"
 
   success "Starship installed"
+}
+
+# Install tmux
+install_tmux() {
+  if command -v tmux &>/dev/null; then
+    success "tmux already installed ($(tmux -V))"
+    return
+  fi
+
+  info "Installing tmux..."
+
+  if [[ "$OS" == "Darwin" ]]; then
+    brew install tmux
+    success "tmux installed (Homebrew)"
+  elif [[ "$OS" == "Linux" ]]; then
+    if command -v apt-get &>/dev/null; then
+      sudo apt-get install -y tmux
+    elif command -v dnf &>/dev/null; then
+      sudo dnf install -y tmux
+    elif command -v pacman &>/dev/null; then
+      sudo pacman -Sy --noconfirm tmux
+    elif command -v apk &>/dev/null; then
+      sudo apk add tmux
+    else
+      error "Unknown package manager. Please install tmux manually."
+      return 1
+    fi
+    success "tmux installed"
+  fi
 }
 
 # Install tmux plugin manager
@@ -372,12 +475,20 @@ main() {
     setup_neovim
   fi
 
+  if confirm "Install tmux?"; then
+    install_tmux
+  fi
+
   if confirm "Install tmux plugin manager (TPM)?"; then
     install_tpm
   fi
 
-  if confirm "Setup capslock -> escape mapping (X11)?"; then
-    setup_capslock_remap
+  if [[ "$OS" == "Linux" ]]; then
+    if confirm "Setup capslock -> escape mapping (X11)?"; then
+      setup_capslock_remap
+    fi
+  elif [[ "$OS" == "Darwin" ]]; then
+    info "Tip: Remap Caps Lock to Escape in System Settings > Keyboard > Keyboard Shortcuts > Modifier Keys"
   fi
 
   link_dotfiles

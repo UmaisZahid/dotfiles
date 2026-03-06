@@ -2,6 +2,7 @@
 # ============================================
 
 # Path setup
+typeset -U path
 export PATH="$HOME/.local/bin:$PATH"
 
 # History configuration
@@ -33,6 +34,9 @@ fi
 
 source "${ZINIT_HOME}/zinit.zsh"
 
+# Completion system (required explicitly on macOS)
+autoload -Uz compinit && compinit
+
 # Plugins
 zinit light Aloxaf/fzf-tab
 zinit light zsh-users/zsh-autosuggestions
@@ -63,21 +67,13 @@ if command -v fzf &>/dev/null; then
     # Enable fzf keybindings
     if [[ -f /usr/share/fzf/key-bindings.zsh ]]; then
         source /usr/share/fzf/key-bindings.zsh
+    elif [[ -f /opt/homebrew/opt/fzf/shell/key-bindings.zsh ]]; then
+        source /opt/homebrew/opt/fzf/shell/key-bindings.zsh
+    elif [[ -f /usr/local/opt/fzf/shell/key-bindings.zsh ]]; then
+        source /usr/local/opt/fzf/shell/key-bindings.zsh
     elif [[ -f ~/.fzf.zsh ]]; then
         source ~/.fzf.zsh
     fi
-
-    # Ctrl+R for history search
-    fzf-history-widget() {
-        local selected
-        selected=$(fc -rl 1 | fzf --query="$LBUFFER" +s --tac | sed 's/^ *[0-9]* *//')
-        if [[ -n "$selected" ]]; then
-            LBUFFER="$selected"
-        fi
-        zle redisplay
-    }
-    zle -N fzf-history-widget
-    bindkey '^R' fzf-history-widget
 fi
 
 # ============================================
@@ -156,12 +152,12 @@ up() {
 
 # Copy current directory path to clipboard
 cpwd() {
-    if command -v xclip &>/dev/null; then
+    if command -v pbcopy &>/dev/null; then
+        pwd | tr -d '\n' | pbcopy
+    elif command -v xclip &>/dev/null; then
         pwd | tr -d '\n' | xclip -selection clipboard
     elif command -v xsel &>/dev/null; then
         pwd | tr -d '\n' | xsel --clipboard
-    elif command -v pbcopy &>/dev/null; then
-        pwd | tr -d '\n' | pbcopy
     else
         echo "No clipboard tool found (xclip, xsel, or pbcopy)"
         return 1
