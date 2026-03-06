@@ -16,7 +16,7 @@ setopt APPEND_HISTORY
 
 # Basic options
 setopt AUTO_CD
-setopt CORRECT
+unsetopt CORRECT
 setopt NO_BEEP
 
 
@@ -82,54 +82,10 @@ fi
 
 # General
 
-# Git - Basic operations
-alias g='git'
-alias ga='git add'
-alias gaa='git add --all'
-alias gst='git status'
-alias gss='git status --short'
-
-# Git - Commits
-alias gc='git commit --verbose'
-alias 'gc!'='git commit --verbose --amend'
-alias gcm='git commit -m'
-
-# Git - Branches
-alias gco='git checkout'
-alias gb='git branch'
-alias gba='git branch --all'
-alias gbd='git branch --delete'
-alias gbD='git branch --delete --force'
-
-# Git - Diffs
-alias gd='git diff'
-alias gdc='git diff --cached'
-
-# Git - Pull/Push
-alias gl='git pull'
-alias gp='git push'
-alias gpf='git push --force-with-lease'
-alias gpsup='git push --set-upstream origin $(git branch --show-current)'
-
-# Git - Fetch
-alias gf='git fetch'
-alias gfa='git fetch --all --tags --prune'
-alias gfu='git fetch upstream'
-
-# Git - Merge/Rebase
-alias gm='git merge'
-alias grb='git rebase'
-alias grba='git rebase --abort'
-
-# Git - Logs
-alias glo='git log --oneline'
-alias glog='git log --oneline --decorate --graph'
-
-# Git - Reset/Restore
-alias grh='git reset'
-alias grhh='git reset --hard'
-alias grs='git restore'
-alias grst='git restore --staged'
+# Git
+alias gsu='git submodule update --init --recursive'
+alias glo='git log --oneline --decorate --graph'
+alias gau='git add -u'
 
 # ============================================
 # Functions
