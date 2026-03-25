@@ -74,6 +74,8 @@ if command -v fzf &>/dev/null; then
     elif [[ -f ~/.fzf.zsh ]]; then
         source ~/.fzf.zsh
     fi
+    # Set up fzf key bindings and fuzzy completion
+    source <(fzf --zsh)
 fi
 
 # ============================================
